@@ -44,7 +44,7 @@ def raise_bad_request(message):
 
 
 def raise_not_found(request):
-    message = f"URL [{request.url}] doesn't exist"
+    message = f"URL: {request.url} doesn't exist"
     raise HTTPException(status_code=404, detail=message)
 
 
@@ -91,6 +91,18 @@ def get_url_info(
         return get_admin_info(db_url)
     else:
         raise_not_found(request)
+
+
+@app.patch("/admin/{secret_key}/activate")
+def reactivate_url(secret_key: str, db: Session = Depends(get_db)):
+    db_url = crud.get_db_url_by_secret_key(db, secret_key=secret_key)
+    if db_url:
+        db_url.is_active = True
+        db.commit()
+        db.refresh(db_url)
+        return {"detail": "URL reactivated successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="URL not found")
 
 
 @app.delete("/admin/{secret_key}")
