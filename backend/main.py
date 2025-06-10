@@ -58,7 +58,11 @@ def create_url(url: schemas.URLBase, db: Session = Depends(get_db)):
     if not validators.url(url.target_url):
         raise_bad_request(message="Your provided URL is not valid")
 
-    db_url = crud.create_db_url(db=db, url=url)
+    try:
+        db_url = crud.create_db_url(db=db, url=url)
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+
     return get_admin_info(db_url)
 
 
