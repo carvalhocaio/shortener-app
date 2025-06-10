@@ -1,5 +1,6 @@
 from http import HTTPStatus
 
+import httpx
 import validators
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse
@@ -56,9 +57,26 @@ def read_root():
 
 
 @app.post("/url", response_model=schemas.URLInfo)
-def create_url(url: schemas.URLBase, db: Session = Depends(get_db)):
+async def create_url(url: schemas.URLBase, db: Session = Depends(get_db)):
     if not validators.url(url.target_url):
         raise_bad_request(message="Your provided URL is not valid")
+
+    try:
+        async with httpx.AsyncClient(timeout=5) as client:
+            response = await client.get(url.target_url, follow_redirects=True)
+        if response.status_code != HTTPStatus.OK:
+            raise HTTPException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                detail=(
+                    "Target website is not accessible "
+                    f"(status code {response.status_code})."
+                ),
+            )
+    except httpx.RequestError:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="Target website is not accessible",
+        )
 
     try:
         db_url = crud.create_db_url(db=db, url=url)
