@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 import validators
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse
@@ -40,12 +42,12 @@ def get_admin_info(db_url: models.URL) -> schemas.URLInfo:
 
 
 def raise_bad_request(message):
-    raise HTTPException(status_code=400, detail=message)
+    raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=message)
 
 
 def raise_not_found(request):
     message = f"URL: {request.url} doesn't exist"
-    raise HTTPException(status_code=404, detail=message)
+    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=message)
 
 
 @app.get("/")
@@ -61,7 +63,7 @@ def create_url(url: schemas.URLBase, db: Session = Depends(get_db)):
     try:
         db_url = crud.create_db_url(db=db, url=url)
     except ValueError as e:
-        raise HTTPException(status_code=409, detail=str(e))
+        raise HTTPException(status_code=HTTPStatus.CONFLICT, detail=str(e))
 
     return get_admin_info(db_url)
 
@@ -102,7 +104,9 @@ def reactivate_url(secret_key: str, db: Session = Depends(get_db)):
         db.refresh(db_url)
         return {"detail": "URL reactivated successfully"}
     else:
-        raise HTTPException(status_code=404, detail="URL not found")
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="URL not found"
+        )
 
 
 @app.delete("/admin/{secret_key}")
