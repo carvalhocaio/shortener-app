@@ -6,3 +6,6 @@ lint:
 
 format:
 	ruff check . --fix && ruff format .
+
+test:
+	PYTHONPATH=. pytest
