@@ -28,9 +28,15 @@ def get_admin_info(db_url: models.URL) -> schemas.URLInfo:
         "administration info", secret_key=db_url.secret_key
     )
 
-    db_url.url = str(base_url.replace(path=db_url.key))
-    db_url.admin_url = str(base_url.replace(path=admin_endpoint))
-    return db_url
+    return schemas.URLInfo(
+        target_url=db_url.target_url,
+        key=db_url.key,
+        secret_key=db_url.secret_key,
+        is_active=db_url.is_active,
+        clicks=db_url.clicks,
+        url=str(base_url.replace(path=db_url.key)),
+        admin_url=str(base_url.replace(path=admin_endpoint)),
+    )
 
 
 def raise_bad_request(message):
