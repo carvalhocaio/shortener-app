@@ -6,6 +6,8 @@ from main import app
 
 client = TestClient(app)
 
+CLICKS_E2E = 2
+
 
 def test_e2e_full_flow():
     # 1. Check main route
@@ -65,4 +67,4 @@ def test_e2e_full_flow():
     # 10. Access admin to validate counter (must be 2)
     response = client.get(admin_path)
     assert response.status_code == HTTPStatus.OK
-    assert response.json()["clicks"] == 2
+    assert response.json()["clicks"] == CLICKS_E2E
