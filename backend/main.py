@@ -1,5 +1,6 @@
-import validators
 from http import HTTPStatus
+
+import validators
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
@@ -103,7 +104,9 @@ def reactivate_url(secret_key: str, db: Session = Depends(get_db)):
         db.refresh(db_url)
         return {"detail": "URL reactivated successfully"}
     else:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="URL not found")
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="URL not found"
+        )
 
 
 @app.delete("/admin/{secret_key}")
